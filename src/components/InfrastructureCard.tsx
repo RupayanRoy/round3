@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { InfrastructureItem } from "../types/infrastructure";
 import { StatusBadge } from "./StatusBadge";
-import { Activity, Zap, Droplets, Trash2, Wifi, MapPin } from "lucide-react";
+import { Activity, Zap, Droplets, Trash2, Wifi, MapPin, HeartPulse, Building2 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, YAxis, XAxis, Tooltip } from 'recharts';
 
 const icons = {
@@ -11,10 +11,12 @@ const icons = {
   Water: Droplets,
   Waste: Trash2,
   Connectivity: Wifi,
+  Healthcare: HeartPulse,
+  'Public Services': Building2,
 };
 
 export const InfrastructureCard = ({ item }: { item: InfrastructureItem }) => {
-  const Icon = icons[item.type];
+  const Icon = icons[item.type] || Building2;
   const utilization = (item.currentUsage / item.maxCapacity) * 100;
 
   return (
@@ -41,9 +43,8 @@ export const InfrastructureCard = ({ item }: { item: InfrastructureItem }) => {
             <span className="font-medium">{Math.round(utilization)}%</span>
           </div>
           <Progress 
-            value={utilization} 
-            className="h-2" 
-            // Custom color based on status would be nice but shadcn progress is limited without custom classes
+            value={Math.min(utilization, 100)} 
+            className={`h-2 ${utilization > 95 ? 'bg-rose-100' : ''}`} 
           />
           <div className="text-2xl font-bold">
             {item.currentUsage.toLocaleString()} 
@@ -68,6 +69,7 @@ export const InfrastructureCard = ({ item }: { item: InfrastructureItem }) => {
                   fillOpacity={1} 
                   fill={`url(#gradient-${item.id})`} 
                   strokeWidth={2}
+                  isAnimationActive={false}
                 />
               </AreaChart>
             </ResponsiveContainer>

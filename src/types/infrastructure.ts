@@ -1,6 +1,6 @@
-export type InfrastructureType = 'Transport' | 'Energy' | 'Water' | 'Waste' | 'Connectivity';
+export type InfrastructureType = 'Transport' | 'Energy' | 'Water' | 'Waste' | 'Connectivity' | 'Healthcare' | 'Public Services';
 export type Zone = 'North' | 'South' | 'East' | 'West' | 'Central';
-export type Status = 'Optimal' | 'Warning' | 'Critical' | 'Underutilized';
+export type Status = 'Optimal' | 'Warning' | 'Critical' | 'Underutilized' | 'Congested' | 'Overloaded';
 
 export interface DataPoint {
   time: string;
