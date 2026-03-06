@@ -7,6 +7,16 @@ export interface DataPoint {
   value: number;
 }
 
+export interface MaintenanceTask {
+  id: string;
+  assetId: string;
+  assetName: string;
+  type: 'Routine' | 'Emergency' | 'Upgrade';
+  status: 'Scheduled' | 'In Progress' | 'Completed';
+  date: string;
+  priority: 'Low' | 'Medium' | 'High';
+}
+
 export interface InfrastructureItem {
   id: string;
   name: string;
@@ -18,13 +28,12 @@ export interface InfrastructureItem {
   status: Status;
   history: DataPoint[];
   lastUpdated: string;
-  coordinates: [number, number]; // [lat, lng]
+  coordinates: [number, number];
 }
 
-export interface CityStats {
-  totalResources: number;
-  overloaded: number;
-  highUtilization: number;
-  normal: number;
-  underutilized: number;
+export interface ZoneHealth {
+  zone: Zone;
+  score: number; // 0-100
+  status: 'Healthy' | 'Strained' | 'Critical';
+  activeIssues: number;
 }
