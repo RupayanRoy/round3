@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { InfrastructureItem, Status, Zone, InfrastructureType } from '../types/infrastructure';
 
+const ZONE_COORDS: Record<Zone, [number, number]> = {
+  'Central': [51.505, -0.09],
+  'North': [51.52, -0.09],
+  'South': [51.49, -0.09],
+  'East': [51.505, -0.06],
+  'West': [51.505, -0.12],
+};
+
 const INITIAL_DATA: InfrastructureItem[] = [
   {
     id: 'traffic-1',
@@ -13,6 +21,7 @@ const INITIAL_DATA: InfrastructureItem[] = [
     status: 'Optimal',
     history: [],
     lastUpdated: new Date().toISOString(),
+    coordinates: [51.505, -0.09],
   },
   {
     id: 'parking-1',
@@ -25,6 +34,7 @@ const INITIAL_DATA: InfrastructureItem[] = [
     status: 'Warning',
     history: [],
     lastUpdated: new Date().toISOString(),
+    coordinates: [51.508, -0.092],
   },
   {
     id: 'hospital-1',
@@ -37,6 +47,7 @@ const INITIAL_DATA: InfrastructureItem[] = [
     status: 'Warning',
     history: [],
     lastUpdated: new Date().toISOString(),
+    coordinates: [51.505, -0.06],
   },
   {
     id: 'water-1',
@@ -49,6 +60,7 @@ const INITIAL_DATA: InfrastructureItem[] = [
     status: 'Optimal',
     history: [],
     lastUpdated: new Date().toISOString(),
+    coordinates: [51.52, -0.09],
   },
   {
     id: 'power-1',
@@ -61,6 +73,7 @@ const INITIAL_DATA: InfrastructureItem[] = [
     status: 'Warning',
     history: [],
     lastUpdated: new Date().toISOString(),
+    coordinates: [51.505, -0.12],
   },
   {
     id: 'waste-1',
@@ -73,6 +86,7 @@ const INITIAL_DATA: InfrastructureItem[] = [
     status: 'Underutilized',
     history: [],
     lastUpdated: new Date().toISOString(),
+    coordinates: [51.49, -0.09],
   }
 ];
 
@@ -87,20 +101,19 @@ export function useInfrastructureData() {
       if (type === 'Energy' || type === 'Water') return 'Overloaded';
       return 'Critical';
     }
-    if (ratio > 0.8) return 'Warning';
-    if (ratio < 0.15) return 'Underutilized';
+    if (ratio > 0.75) return 'Warning';
+    if (ratio < 0.2) return 'Underutilized';
     return 'Optimal';
   };
 
   const updateData = useCallback(() => {
     setData(prevData => prevData.map(item => {
-      // Simulate realistic fluctuations based on type
-      let volatility = 0.05; // 5% default
-      if (item.type === 'Transport') volatility = 0.15; // Traffic is swingy
-      if (item.type === 'Healthcare') volatility = 0.02; // Hospital beds change slowly
+      let volatility = 0.05;
+      if (item.type === 'Transport') volatility = 0.15;
+      if (item.type === 'Healthcare') volatility = 0.02;
       
-      const change = (Math.random() - 0.45) * (item.maxCapacity * volatility); // Slight upward bias
-      const newUsage = Math.max(0, Math.min(item.maxCapacity * 1.1, item.currentUsage + change)); // Allow slight overflow for 'Overloaded'
+      const change = (Math.random() - 0.45) * (item.maxCapacity * volatility);
+      const newUsage = Math.max(0, Math.min(item.maxCapacity * 1.1, item.currentUsage + change));
       const newStatus = getStatus(newUsage, item.maxCapacity, item.type);
       
       const newHistory = [...item.history, { 
@@ -119,7 +132,6 @@ export function useInfrastructureData() {
   }, []);
 
   useEffect(() => {
-    // Run every 5 seconds as requested
     const interval = setInterval(updateData, 5000);
     return () => clearInterval(interval);
   }, [updateData]);

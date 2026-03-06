@@ -18,11 +18,13 @@ export interface InfrastructureItem {
   status: Status;
   history: DataPoint[];
   lastUpdated: string;
+  coordinates: [number, number]; // [lat, lng]
 }
 
 export interface CityStats {
   totalResources: number;
-  criticalAlerts: number;
-  averageUtilization: number;
-  activeZones: number;
+  overloaded: number;
+  highUtilization: number;
+  normal: number;
+  underutilized: number;
 }
