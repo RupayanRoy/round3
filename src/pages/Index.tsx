@@ -1,135 +1,168 @@
-import React, { useState } from 'react';
-import { useInfrastructureData } from '../hooks/useInfrastructureData';
-import InfrastructureCard from '../components/InfrastructureCard';
-import UtilizationChart from '../components/UtilizationChart';
-import AlertPanel from '../components/AlertPanel';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, Map, Settings, ShieldAlert, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { useInfrastructureData } from '../hooks/use-infrastructure-data';
+import { InfrastructureCard } from '../components/InfrastructureCard';
+import { DashboardStats } from '../components/DashboardStats';
+import { AlertPanel } from '../components/AlertPanel';
+import { Zone, InfrastructureType } from '../types/infrastructure';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { LayoutDashboard, Map, Settings, Bell, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const Index = () => {
-  const { zones, alerts } = useInfrastructureData();
-  const [activeZoneId, setActiveZoneId] = useState(zones[0].id);
-  
-  const activeZone = zones.find(z => z.id === activeZoneId) || zones[0];
+  const data = useInfrastructureData();
+  const [zoneFilter, setZoneFilter] = useState<Zone | 'All'>('All');
+  const [typeFilter, setTypeFilter] = useState<InfrastructureType | 'All'>('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredData = data.filter(item => {
+    const matchesZone = zoneFilter === 'All' || item.zone === zoneFilter;
+    const matchesType = typeFilter === 'All' || item.type === typeFilter;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesZone && matchesType && matchesSearch;
+  });
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-100">
-      {/* Sidebar Navigation */}
-      <aside className="fixed left-0 top-0 h-full w-20 bg-white border-r border-slate-200 flex flex-col items-center py-8 gap-8 z-50">
-        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-          <ShieldAlert size={24} />
-        </div>
-        <nav className="flex flex-col gap-4">
-          <button className="p-3 rounded-xl bg-indigo-50 text-indigo-600 transition-all">
-            <LayoutDashboard size={24} />
-          </button>
-          <button className="p-3 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
-            <Map size={24} />
-          </button>
-          <button className="p-3 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
-            <Settings size={24} />
-          </button>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="pl-20 min-h-screen">
-        <header className="sticky top-0 bg-[#f8fafc]/80 backdrop-blur-md z-40 px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">SmartCity Monitor</h1>
-            <p className="text-slate-500 font-medium">Infrastructure Capacity & Utilization Dashboard</p>
+    <div className="min-h-screen bg-slate-50/50 flex flex-col">
+      {/* Navigation Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md px-6 py-3">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center gap-2">
+            <div className="bg-indigo-600 p-2 rounded-xl">
+              <LayoutDashboard className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">SmartCity Monitor</h1>
+              <p className="text-[10px] font-medium text-indigo-600 uppercase tracking-wider">Infrastructure OS v2.4</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          
+          <div className="hidden md:flex items-center gap-6">
+            <nav className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" className="text-slate-600 font-medium">Dashboard</Button>
+              <Button variant="ghost" size="sm" className="text-slate-400 font-medium">Analytics</Button>
+              <Button variant="ghost" size="sm" className="text-slate-400 font-medium">Map View</Button>
+            </nav>
+            <div className="h-6 w-px bg-slate-200" />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" className="rounded-full h-9 w-9">
+                <Bell className="h-4 w-4 text-slate-600" />
+              </Button>
+              <Button variant="outline" size="icon" className="rounded-full h-9 w-9">
+                <Settings className="h-4 w-4 text-slate-600" />
+              </Button>
+              <div className="h-9 w-9 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                AD
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-7xl mx-auto w-full p-6 space-y-8">
+        {/* Welcome Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900">Infrastructure Overview</h2>
+            <p className="text-slate-500 mt-1">Real-time capacity and utilization monitoring across city zones.</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live System Feed Active
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <DashboardStats data={data} />
+
+        {/* Filters & Search */}
+        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input 
-                placeholder="Search resources..." 
-                className="pl-10 bg-white border-none shadow-sm rounded-xl focus-visible:ring-indigo-500"
+                placeholder="Search infrastructure..." 
+                className="pl-9 bg-slate-50 border-slate-200"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-100">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Live System</span>
-            </div>
+            <Select value={zoneFilter} onValueChange={(v) => setZoneFilter(v as any)}>
+              <SelectTrigger className="w-[140px] bg-slate-50 border-slate-200">
+                <SelectValue placeholder="Zone" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Zones</SelectItem>
+                <SelectItem value="North">North</SelectItem>
+                <SelectItem value="South">South</SelectItem>
+                <SelectItem value="East">East</SelectItem>
+                <SelectItem value="West">West</SelectItem>
+                <SelectItem value="Central">Central</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
+              <SelectTrigger className="w-[140px] bg-slate-50 border-slate-200">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Types</SelectItem>
+                <SelectItem value="Transport">Transport</SelectItem>
+                <SelectItem value="Energy">Energy</SelectItem>
+                <SelectItem value="Water">Water</SelectItem>
+                <SelectItem value="Waste">Waste</SelectItem>
+                <SelectItem value="Connectivity">Connectivity</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </header>
+          <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
+            <Button variant="outline" size="sm" onClick={() => {setZoneFilter('All'); setTypeFilter('All'); setSearchQuery('');}}>
+              Reset Filters
+            </Button>
+            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+              Export Report
+            </Button>
+          </div>
+        </div>
 
-        <div className="px-8 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Main Dashboard */}
-          <div className="lg:col-span-8 space-y-8">
-            <Tabs defaultValue={zones[0].id} onValueChange={setActiveZoneId} className="w-full">
-              <div className="flex items-center justify-between mb-6">
-                <TabsList className="bg-slate-200/50 p-1 rounded-2xl h-auto">
-                  {zones.map(zone => (
-                    <TabsTrigger 
-                      key={zone.id} 
-                      value={zone.id}
-                      className="rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-slate-600 data-[state=active]:text-indigo-600 transition-all"
-                    >
-                      {zone.name}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </div>
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeZoneId}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {activeZone.resources.map(resource => (
-                      <InfrastructureCard key={resource.id} resource={resource} />
-                    ))}
-                  </div>
-
-                  <div className="mt-8 grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {activeZone.resources.slice(0, 2).map(resource => (
-                      <UtilizationChart key={`chart-${resource.id}`} resource={resource} />
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </Tabs>
-
-            {/* System Overview Stats */}
-            <div className="bg-indigo-600 rounded-[2rem] p-8 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden">
-              <div className="relative z-10">
-                <h3 className="text-xl font-black mb-2">City-Wide Efficiency</h3>
-                <p className="text-indigo-100 mb-6 max-w-md">Overall infrastructure utilization is currently at 64%. No major outages detected in the last 24 hours.</p>
-                <div className="flex gap-8">
-                  <div>
-                    <p className="text-3xl font-black">98.2%</p>
-                    <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest">Uptime</p>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-black">12.4k</p>
-                    <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest">Active Nodes</p>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-black">0.4s</p>
-                    <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest">Latency</p>
-                  </div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredData.length > 0 ? (
+                filteredData.map(item => (
+                  <InfrastructureCard key={item.id} item={item} />
+                ))
+              ) : (
+                <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+                  <p className="text-slate-400">No infrastructure items match your current filters.</p>
                 </div>
-              </div>
-              <div className="absolute right-[-50px] bottom-[-50px] w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-              <div className="absolute left-[-20px] top-[-20px] w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl" />
+              )}
             </div>
           </div>
-
-          {/* Right Column: Alerts & Notifications */}
-          <div className="lg:col-span-4">
-            <div className="sticky top-32 h-[calc(100vh-160px)]">
-              <AlertPanel alerts={alerts} />
-            </div>
+          <div className="lg:col-span-1">
+            <AlertPanel data={data} />
           </div>
         </div>
       </main>
+
+      <footer className="mt-auto border-t bg-white py-6">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-slate-500">© 2024 SmartCity Administration Dashboard. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-sm text-slate-400 hover:text-indigo-600 transition-colors">Privacy Policy</a>
+            <a href="#" className="text-sm text-slate-400 hover:text-indigo-600 transition-colors">Terms of Service</a>
+            <a href="#" className="text-sm text-slate-400 hover:text-indigo-600 transition-colors">Support</a>
+          </div>
+        </div>
+        <MadeWithDyad />
+      </footer>
     </div>
   );
 };

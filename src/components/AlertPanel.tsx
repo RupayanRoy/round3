@@ -1,65 +1,44 @@
-import React from 'react';
-import { Alert } from '../types/infrastructure';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { AlertCircle, Bell, Clock } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfrastructureItem } from "../types/infrastructure";
+import { AlertCircle, Clock } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface Props {
-  alerts: Alert[];
-}
+export const AlertPanel = ({ data }: { data: InfrastructureItem[] }) => {
+  const alerts = data.filter(i => i.status === 'Critical' || i.status === 'Warning');
 
-const AlertPanel: React.FC<Props> = ({ alerts }) => {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 h-full flex flex-col border border-slate-100">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
-            <Bell size={20} />
-          </div>
-          <h2 className="font-black text-slate-800 tracking-tight">System Alerts</h2>
-        </div>
-        {alerts.length > 0 && (
-          <span className="px-2 py-1 bg-rose-500 text-white text-[10px] font-black rounded-full animate-pulse">
-            {alerts.length} NEW
-          </span>
-        )}
-      </div>
-
-      <ScrollArea className="flex-1 pr-4">
-        {alerts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-slate-400">
-            <AlertCircle size={32} className="mb-2 opacity-20" />
-            <p className="text-sm font-medium">No active alerts</p>
-          </div>
-        ) : (
+    <Card className="h-full border-slate-200">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-rose-500" />
+          Active Alerts
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-4">
-            {alerts.map((alert) => (
-              <div 
-                key={alert.id} 
-                className={cn(
-                  "p-4 rounded-2xl border-l-4 transition-all hover:translate-x-1",
-                  alert.severity === 'high' ? "bg-rose-50 border-rose-500" : "bg-amber-50 border-amber-500"
-                )}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                    {alert.zoneName}
-                  </span>
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                    <Clock size={10} />
-                    {format(alert.timestamp, 'HH:mm:ss')}
+            {alerts.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No active alerts detected.</p>
+            ) : (
+              alerts.map(alert => (
+                <div key={alert.id} className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 bg-slate-50/50">
+                  <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${alert.status === 'Critical' ? 'bg-rose-500' : 'bg-amber-500'}`} />
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold leading-none">{alert.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {alert.status === 'Critical' ? 'Overload detected' : 'Approaching capacity'} in {alert.zone} zone.
+                    </p>
+                    <div className="flex items-center text-[10px] text-slate-400">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Just now
+                    </div>
                   </div>
                 </div>
-                <h4 className="text-sm font-bold text-slate-800 mb-1">{alert.resourceName}</h4>
-                <p className="text-xs text-slate-600 leading-relaxed">{alert.message}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-        )}
-      </ScrollArea>
-    </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 };
-
-export default AlertPanel;

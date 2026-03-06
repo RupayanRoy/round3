@@ -1,27 +1,28 @@
-export type InfrastructureType = 'Power' | 'Water' | 'Transport' | 'Waste' | 'Traffic';
+export type InfrastructureType = 'Transport' | 'Energy' | 'Water' | 'Waste' | 'Connectivity';
+export type Zone = 'North' | 'South' | 'East' | 'West' | 'Central';
+export type Status = 'Optimal' | 'Warning' | 'Critical' | 'Underutilized';
 
-export interface InfrastructureResource {
+export interface DataPoint {
+  time: string;
+  value: number;
+}
+
+export interface InfrastructureItem {
   id: string;
   name: string;
   type: InfrastructureType;
-  currentUtilization: number;
+  zone: Zone;
+  currentUsage: number;
   maxCapacity: number;
   unit: string;
-  status: 'optimal' | 'warning' | 'critical' | 'underutilized';
-  trend: number[];
+  status: Status;
+  history: DataPoint[];
+  lastUpdated: string;
 }
 
-export interface CityZone {
-  id: string;
-  name: string;
-  resources: InfrastructureResource[];
-}
-
-export interface Alert {
-  id: string;
-  timestamp: Date;
-  zoneName: string;
-  resourceName: string;
-  message: string;
-  severity: 'low' | 'medium' | 'high';
+export interface CityStats {
+  totalResources: number;
+  criticalAlerts: number;
+  averageUtilization: number;
+  activeZones: number;
 }
